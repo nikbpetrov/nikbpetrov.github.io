@@ -7,9 +7,43 @@
     </head>
     <body></body>
     <script>
+        // --- DataPipe (https://pipe.jspsych.org) integration -----------------------
+        // One participant = one sessionId, prefixed onto every uploaded filename so the run can be reassembled later.
+        const sessionId = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+        const DATAPIPE_EXPERIMENT_ID = 'MBmTYrm7S1OQ';
+
+        async function saveChunkToDataPipe(filename, chunk) {
+            const res = await fetch('https://pipe.jspsych.org/api/data/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: '*/*' },
+                body: JSON.stringify({
+                    experimentID: DATAPIPE_EXPERIMENT_ID,
+                    filename,
+                    data: JSON.stringify(chunk),
+                }),
+            });
+            if (!res.ok) {
+                throw new Error(`DataPipe ${res.status}: ${await res.text()}`);
+            }
+        }
+
         const config = {
-            tasks: [{ task_name: 'number_series', custom_task_settings: {} }],
-            media_basepath: 'https://nikbpetrov.github.io/assets/'
+            media_basepath: 'https://nikbpetrov.github.io/assets/',
+            data_saving: {
+                // DataSaver default chunking is ~1MB; well under DataPipe's 32MB/save cap.
+                // One DataPipe POST per chunk; filenames stay unique via sessionId + checkpoint + indices.
+                // Promise.all parallelizes within a checkpoint — switch to sequential for...of if rate-limited.
+                // Runs inside a fire-and-forget async_data_save trial, so a slow upload won't block the experiment.
+                onSaveData: async (chunks, checkpoint, checkpointIndex) => {
+                    await Promise.all(
+                        chunks.map((chunk, chunkIndex) => {
+                            const filename = `${sessionId}__${checkpoint}__c${checkpointIndex}__p${chunkIndex}.json`;
+                            return saveChunkToDataPipe(filename, chunk);
+                        })
+                    );
+                },
+                onError: (err) => console.error('DataPipe save failed:', err),
+            },
         };
         const fpt_battery = initFPTBattery(config);
         fpt_battery.run();
