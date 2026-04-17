@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>My Experiment</title>
+        <script src="https://unpkg.com/fpt-battery@latest"></script>
+        <link rel="stylesheet" href="https://unpkg.com/fpt-battery@latest/dist/fpt-battery.css" />
+    </head>
+    <body></body>
+    <script>
+        const config = {
+            tasks: [{ task_name: 'number_series', custom_task_settings: {} }],
+            media_basepath: 'https://nikbpetrov.github.io/assets/'
+        };
+        const fpt_battery = initFPTBattery(config);
+        fpt_battery.run();
+    </script>
+</html>
