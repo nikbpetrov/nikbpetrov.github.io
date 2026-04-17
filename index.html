@@ -28,6 +28,23 @@
         }
 
         const config = {
+            tasks: [
+                // { task_name: 'number_series', custom_task_settings: {} }
+                { 
+                    task_name: 'bayesian_update', 
+                    custom_task_settings: {
+                        task_version: 'easy',
+                        ball_splits: [[30, 70]],
+                        unique_test_trials_n: 2,
+                        test_trials_n: 10,
+                        test_trials_per_block: 10,
+                        test_blocks: 1,
+                        pt_trials_n: 5,
+                        pt_trials_per_block: 5,
+                        pt_blocks: 1,
+                    }
+                }
+            ],
             media_basepath: 'https://nikbpetrov.github.io/assets/',
             data_saving: {
                 // DataSaver default chunking is ~1MB; well under DataPipe's 32MB/save cap.
